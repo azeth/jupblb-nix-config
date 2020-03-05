@@ -12,6 +12,6 @@ symlinkJoin {
       --add-flags "--confdir=${builtins.toString ./.}" \
       --prefix PATH : ${lib.makeBinPath [ atool bat file imagemagick jq lynx mediainfo poppler_utils ]} \
       --set TERM xterm-kitty \
-      --set BAT_THEME GitHub
+      --set BAT_THEME "Solarized (light)"
   '';
 }
