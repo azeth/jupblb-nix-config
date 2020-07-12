@@ -1,6 +1,9 @@
 { config, lib, pkgs, ... }:
 
 {
+  home.file             = {
+    ".emacs.d/init.el".text = ''(load "default.el")'';
+  };
   home.packages         = with pkgs; [
     bazel-compdb
     code-server
@@ -28,7 +31,7 @@
       bazel        = unstable.bazel;
       bazel-compdb = unstable.bazel-compdb';
       code-server  = unstable.code-server;
-      emacsGtk     = unstable.emacs';
+      doom-emacs   = unstable.doom-emacs';
       gitAndTools  = pkgs.gitAndTools // {
         delta = unstable.gitAndTools.delta;
       };
@@ -42,7 +45,7 @@
     bat.themes.gruvbox = builtins.readFile ./misc/gruvbox.tmTheme;
 
     emacs.enable  = true;
-    emacs.package = pkgs.emacsGtk;
+    emacs.package = pkgs.doom-emacs;
 
     firefox = {
       enable            = true;
