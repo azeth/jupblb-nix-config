@@ -14,6 +14,25 @@
     bat.enable = true;
     bat.config = { theme = "gruvbox-light"; };
 
+    emacs = {
+      enable        = true;
+      extraPackages = epkgs: with epkgs; [
+        doom-modeline
+        evil evil-collection
+        gruvbox-theme
+        org
+        page-break-lines
+        use-package
+        which-key
+
+        (pkgs.runCommand "default.el" {} ''
+          mkdir -p $out/share/emacs/site-lisp
+          cp ${./misc/init.el} $out/share/emacs/site-lisp/default.el
+        '')
+      ];
+      package       = pkgs.emacs-nox;
+    };
+
     fish = {
       enable               = true;
       interactiveShellInit = builtins.readFile ./misc/config.fish;
