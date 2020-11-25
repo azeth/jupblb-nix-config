@@ -119,9 +119,6 @@
           plugin = gruvbox-community;
           config = builtins.readFile ../config/neovim/gruvbox-community.vim;
         } {
-          plugin = fzf-vim;
-          config = builtins.readFile ../config/neovim/fzf-vim.vim;
-        } {
           plugin = lf-vim;
           config = builtins.readFile ../config/neovim/lf.vim;
         } {
@@ -131,17 +128,30 @@
           plugin = nvim-treesitter;
           config = builtins.readFile ../config/neovim/nvim-treesitter.vim;
         } {
+          plugin = pkgs.vimUtils.buildVimPlugin {
+            buildPhase = ":";
+            pname = "nvim-telescope";
+            version = "2020-11-22";
+            src    = pkgs.fetchFromGitHub {
+              owner  = "nvim-telescope";
+              repo   = "telescope.nvim";
+              rev    = "master";
+              sha256 = "08ilpzzpzzgy8hnq7fmisljq06sbs7l998aysjblv8gkkhp943mh";
+            };
+          };
+          config = builtins.readFile ../config/neovim/telescope-nvim.vim;
+        } {
           plugin = vimwiki;
           config = ''
             let g:vimwiki_list = [{'path': '~/Documents/vimwiki/',
                 \ 'syntax': 'markdown', 'ext': '.md'}]
           '';
         }
-        vim-fish vim-signify vim-nix vim-tmux-navigator
+        nvim-web-devicons plenary-nvim popup-nvim vim-fish vim-signify vim-nix vim-tmux-navigator
       ];
       enable        = true;
       extraPackages = with pkgs; [
-        glow nodePackages.bash-language-server ripgrep rnix-lsp
+        fd glow nodePackages.bash-language-server ripgrep rnix-lsp
       ];
       package       = pkgs.neovim-nightly;
       vimAlias      = true;
