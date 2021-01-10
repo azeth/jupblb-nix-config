@@ -1,7 +1,8 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   boot = {
+    supportedFilesystems            = [ "zfs" ];
     initrd.availableKernelModules   = [
       "nvme" "xhci_pci" "ahci" "usb_storage" "usbhid" "sd_mod"
     ];
@@ -10,6 +11,61 @@
     kernelParams                    = [ "mitigations=off" ];
     loader.efi.canTouchEfiVariables = true;
     loader.systemd-boot.enable      = true;
+  };
+
+  containers.azeth = {
+    additionalCapabilities = [ "CAP_SYS_ADMIN" "CAP_SYS_RAWIO" ];
+    allowedDevices         = [
+      { modifier = "mrw"; node = "/dev/sda"; }
+      { modifier = "mrw"; node = "/dev/sda1"; }
+      { modifier = "mrw"; node = "/dev/zfs"; }
+      { modifier = "mrw"; node = "/proc/self/mounts"; }
+    ];
+    autoStart              = true;
+    bindMounts             = {
+      "/dev/sda"          = { mountPoint = "/dev/sda"; isReadOnly = false; };
+      "/dev/sda1"         = { mountPoint = "/dev/sda1"; isReadOnly = false; };
+      "/dev/zfs"          = { mountPoint = "/dev/zfs"; isReadOnly = false; };
+      "/proc/self/mounts" = { mountPoint = "/proc/self/mounts"; isReadOnly = false; };
+    };
+    config                 = {
+      boot.supportedFilesystems  = [ "zfs" ];
+      environment.systemPackages = with pkgs; [ file gptfdisk htop ];
+#     fileSystems."/epool" =
+#       { device = "epool";
+#         fsType = "zfs";
+#       };
+      networking                 = {
+        hostId   = "1366515e";
+        hostName = "azeth";
+      };
+      programs                   = {
+        bash.enableCompletion = true;
+        bash.enableLsColors   = true;
+        bash.promptInit       = builtins.readFile ./config/bashrc;
+        vim.defaultEditor     = true;
+      };
+      services.openssh           = {
+        openFirewall           = true;
+        enable                 = true;
+        passwordAuthentication = false;
+        permitRootLogin        = "yes";
+        ports                  = [ 1997 ];
+      };
+      users.users.azeth          = {
+        extraGroups                 = [ "wheel" ];
+        initialPassword             = "changeme";
+        isNormalUser                = true;
+        openssh.authorizedKeys.keys = [
+          (builtins.readFile ./config/ssh/azeth/id_rsa.pub)
+        ];
+      };
+    };
+    enableTun                    = true;
+    forwardPorts                 = [
+       { containerPort = 1997; hostPort = 1997; protocol = "tcp"; }
+       { containerPort = 1997; hostPort = 1997; protocol = "udp"; }
+    ];
   };
 
   fileSystems = {
@@ -64,6 +120,7 @@
 
   imports = [ ./common/nixos.nix ];
 
+  networking.hostId                = "5f500dcd";
   networking.hostName              = "hades";
   networking.networkmanager.enable = true;
 
