@@ -11,6 +11,54 @@
     loader.efi.canTouchEfiVariables = true;
     loader.systemd-boot.enable      = true;
     supportedFilesystems            = [ "zfs" ];
+    zfs.extraPools                  = [ "azpool" ];
+  };
+
+  containers.azeth = {
+    allowedDevices         = [
+      { modifier = "rw"; node = "/dev/zfs"; }
+    ];
+    autoStart              = false;
+    bindMounts             = {
+#     "/dev/zfs"          = {
+#        mountPoint = "/dev/zfs";
+#        isReadOnly = false;
+#     };
+    };
+    config                 = {
+      boot.supportedFilesystems  = [ "zfs" ];
+      environment.systemPackages = with pkgs; [ file gptfdisk htop ];
+      networking                 = {
+        hostId   = "a0465a2b";
+        hostName = "azeth";
+      };
+      programs                   = {
+        bash.enableCompletion = true;
+        bash.enableLsColors   = true;
+        bash.promptInit       = builtins.readFile ./config/bashrc;
+        vim.defaultEditor     = true;
+      };
+      services.openssh           = {
+        openFirewall           = true;
+        enable                 = true;
+        passwordAuthentication = false;
+        permitRootLogin        = "yes";
+        ports                  = [ 1997 ];
+      };
+      users.users.azeth          = {
+        extraGroups                 = [ "wheel" ];
+        initialPassword             = "changeme";
+        isNormalUser                = true;
+        openssh.authorizedKeys.keys = [
+          (builtins.readFile ./config/ssh/azeth.pub)
+        ];
+      };
+    };
+    enableTun                    = true;
+    forwardPorts                 = [
+       { containerPort = 1997; hostPort = 1997; protocol = "tcp"; }
+       { containerPort = 1997; hostPort = 1997; protocol = "udp"; }
+    ];
   };
 
   environment.systemPackages = with pkgs; [ wol ];
